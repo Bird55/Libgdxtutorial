@@ -5,34 +5,58 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 
-import ru.yar.game.Libgdxtutorial.controller.WorldController;
-import ru.yar.game.Libgdxtutorial.model.Player;
+import java.util.HashMap;
+import java.util.Map;
+
 import ru.yar.game.Libgdxtutorial.model.World;
-import ru.yar.game.Libgdxtutorial.view.WorldRenderer;
 
 /**
  * Created by bird on 04.09.2015.
  *
  */
 public class GameScreen implements Screen, InputProcessor {
-    private World world;
-    private WorldRenderer renderer;
-    private WorldController controller;
 
-    private int width, height;
+    public OrthographicCamera cam;
+    public World world;
+    private SpriteBatch spriteBatch;
+    Texture texture;
+    public Map<String, TextureRegion> textureRegions = new HashMap<String, TextureRegion>();
+
+    public int width;
+    public int height;
 
     @Override
     public void show() {
-        world = new World();
-        renderer = new WorldRenderer(world);
-        controller = new WorldController(world);
+        cam = new OrthographicCamera(World.CAMERA_WIDTH, World.CAMERA_HEIGHT);
+        SetCamera(World.CAMERA_WIDTH / 2f, World.CAMERA_HEIGHT / 2f);
+        spriteBatch = new SpriteBatch();
+        loadTexture();
+        world = new World(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false, spriteBatch, textureRegions);
         Gdx.input.setInputProcessor(this);
+    }
+
+    private void loadTexture() {
+        texture = new Texture(Gdx.files.internal("images/atlas.png"));
+        TextureRegion[][] tmp = TextureRegion.split(texture, texture.getWidth() / 2, texture.getHeight() / 2);
+        textureRegions.put("player", tmp[0][0]);
+        textureRegions.put("brick1", tmp[0][1]);
+        textureRegions.put("brick2", tmp[1][0]);
+        textureRegions.put("brick3", tmp[1][1]);
+    }
+
+    public void SetCamera(float x, float y) {
+        this.cam.position.set(x, y, 1);
+        this.cam.update();
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        ChangeNavigation(screenX, screenY);
         return false;
     }
 
@@ -52,9 +76,9 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        renderer.setSize(width, height);
         this.width = width;
         this.height = height;
+        world.getViewport().update(width, height, true);
     }
 
     @Override
@@ -87,8 +111,8 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        controller.update(delta);
-        renderer.render();
+        world.update(delta);
+        world.draw();
     }
 
     @Override
@@ -96,26 +120,10 @@ public class GameScreen implements Screen, InputProcessor {
         return true;
     }
 
-    private void ChangeNavigation(int x, int y) {
-        controller.resetWay();
-        if (height - y > controller.player.getPosition().y * renderer.ppuY)
-            controller.upPressed();
-
-        if (height - y < controller.player.getPosition().y * renderer.ppuY)
-            controller.downPressed();
-
-        if (x < controller.player.getPosition().x * renderer.ppuX)
-            controller.leftPressed();
-
-        if (x > (controller.player.getPosition().x + Player.SIZE) * renderer.ppuX)
-            controller.rightPressed();
-    }
-
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (!Gdx.app.getType().equals(Application.ApplicationType.Android))
             return false;
-        ChangeNavigation(screenX, screenY);
         return true;
     }
 
@@ -123,7 +131,6 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (!Gdx.app.getType().equals(Application.ApplicationType.Android))
             return false;
-        controller.resetWay();
         return true;
     }
 

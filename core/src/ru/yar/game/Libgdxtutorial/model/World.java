@@ -1,49 +1,95 @@
 package ru.yar.game.Libgdxtutorial.model;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+
+import java.util.Map;
 
 /**
  * Created by bird on 04.09.2015.
  *
  */
-public class World {
-    // Массив блоков
-    Array<Brick> bricks = new Array<Brick>();
-    // Наш персонаж
-    public Player player;
+public class World extends Stage {
 
-    // Ширина мира
-    public int width;
-    // Высота мира
-    public int height;
+    public float ppuX;
+    public float ppuY;
+    // Выбранный астер
+    Actor selectedActor = null;
+    Map<String, TextureRegion> textureRegions;
+    public static float CAMERA_WIDTH = 8f;
+    public static float CAMERA_HEIGHT = 5f;
 
-    // Получить массив блоков
-    public Array<Brick> getBricks() {
-        return bricks;
+    // Обновление положения объектов
+    public void update(float delta) {
+        for (Actor actor : this.getActors()) {
+            if (actor instanceof Player)
+                ((Player)actor).update(delta);
+        }
     }
 
-    // Получить игрока
-    public Player getPlayer() {
-        return player;
+    public World(int x, int y, boolean b, SpriteBatch spriteBatch, Map<String, TextureRegion> textureRegions) {
+        super();
+        this.textureRegions = textureRegions;
+        ppuX = getHeight() / CAMERA_WIDTH;
+        ppuY = getHeight() / CAMERA_HEIGHT;
+        // Добавим 2х персонажей
+        addActor(new Player(new Vector2(4, 2), this));
+        addActor(new Player(new Vector2(2, 4), this));
     }
 
-    public World() {
-        width = 8;
-        height = 5;
-        createWorld();
+    public void setPP(float x, float y) {
+        ppuX = x;
+        ppuY = y;
     }
 
-    // Создаем тестовый мир
-    public void createWorld() {
-        player = new Player(new Vector2(6, 2));
-        bricks.add(new Brick(new Vector2(0, 0)));
-        bricks.add(new Brick(new Vector2(1, 0)));
-        bricks.add(new Brick(new Vector2(2, 0)));
-        bricks.add(new Brick(new Vector2(3, 0)));
-        bricks.add(new Brick(new Vector2(4, 0)));
-        bricks.add(new Brick(new Vector2(5, 0)));
-        bricks.add(new Brick(new Vector2(6, 0)));
-        bricks.add(new Brick(new Vector2(7, 0)));
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        super.touchDown(screenX, screenY, pointer, button);
+
+        // Передвигаем выбранного актёра
+        moveSelected(screenX, screenY);
+
+        return true;
+    }
+
+    /**
+     *  Передвижение выбранного актера
+     *  @param x
+     *  @param y
+     */
+    private void moveSelected(float x, float y) {
+        if (selectedActor != null && selectedActor instanceof Player) {
+            ((Player)selectedActor).ChangeNavigation(x, this.getHeight() - y);
+        }
+    }
+
+    /**
+     *  Сбрасываем текущий вектор направления движения
+     */
+    private void resetSelected() {
+        if (selectedActor != null && selectedActor instanceof Player) {
+            ((Player)selectedActor).resetWay();
+        }
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        super.touchUp(screenX, screenY, pointer, button);
+        resetSelected();
+        return true;
+    }
+
+    public Actor hit(float x, float y, boolean touchable) {
+        Actor actor = super.hit(x, y, touchable);
+        // Если выбрали актера
+        if (actor != null) {
+            // Запоминаем
+            selectedActor = actor;
+        }
+        return actor;
     }
 }
