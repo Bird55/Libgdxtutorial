@@ -1,8 +1,14 @@
 package ru.yar.game.Libgdxtutorial.view;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.yar.game.Libgdxtutorial.model.Brick;
 import ru.yar.game.Libgdxtutorial.model.Player;
@@ -12,13 +18,20 @@ import ru.yar.game.Libgdxtutorial.model.World;
  * Created by bird on 04.09.2015.
  *
  */
-public class WorldRenderer {
+public class worldRenderer {
     public static float CAMERA_WIDTH = 8f;
     public static float CAMERA_HEIGHT = 5f;
 
     private World world;
     public OrthographicCamera cam;
     ShapeRenderer renderer = new ShapeRenderer();
+
+    // Для отрисовки
+    private SpriteBatch spriteBatch;
+    // Текстура нашего атласа
+    Texture texture;
+    // Массив регионов
+    public Map<String, TextureRegion> textureRegions = new HashMap<String, TextureRegion>();
 
     public int width;
     public int height;
@@ -38,48 +51,56 @@ public class WorldRenderer {
         this.cam.update();
     }
 
-    public WorldRenderer(World world) {
+    public worldRenderer(World world) {
+        spriteBatch = new SpriteBatch();
         this.world = world;
         this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         // Устанавливаем камеру по центру
         setCamera(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f);
+        loadTexture();
+    }
+
+    private void loadTexture() {
+        // Создание текстуры
+        texture = new Texture("images/atlas.png");
+        // Получение регионов. Атлас у нас состоит из 4 изображений одинакового размера.
+        // Так что выцепить отдельные регионы не составляет проблемы.
+        TextureRegion tmp[][] = TextureRegion.split(texture, texture.getWidth() / 2, texture.getHeight() / 2);
+        // Добавляем в массив регионов
+        textureRegions.put("player", tmp[0][0]);
+        textureRegions.put("brick1", tmp[0][1]);
+        textureRegions.put("brick2", tmp[1][0]);
+        textureRegions.put("brick3", tmp[1][1]);
     }
 
     // Основной метод, здесь мы отрисовываем все объекты мира
     public void render() {
+        // Начинаем рисовать
+        spriteBatch.begin();
+        // Рисуем блоки
         drawBricks();
+        // Рисуем игрока
         drawPlayer();
+        // Заканчиваем отрисовку
+        spriteBatch.end();
     }
 
     // Отрисовка кирпичей
     private void drawBricks() {
-        renderer.setProjectionMatrix(cam.combined);
-        // Тип устанавливаем... В данном случае с заливкой
-        renderer.begin(ShapeRenderer.ShapeType.Filled);
-        // Прогоняем блоки
+        int i = 0;
         for (Brick brick: world.getBricks()) {
-            Rectangle rect = brick.getBounds();
-            float x1 = brick.getPosition().x + rect.x;
-            float y1 = brick.getPosition().y + rect.y;
-            renderer.setColor(0, 0, 0, 1);
-            // Рисуем блок
-            renderer.rect(x1, y1, rect.width, rect.height);
+            // Ради интереса для отрисовки используем разные изображения (регионы)
+            spriteBatch.draw(textureRegions.get("brick" + (i % 3 + 1)),
+                    brick.getPosition().x * ppuX, brick.getPosition().y * ppuY,
+                    Brick.SIZE * ppuY, Brick.SIZE * ppuY);
+            i++;
         }
-
-        renderer.end();
     }
 
-    // Отрисовка персонажа по аналогии
+    // Отрисовка персонажа
     private void drawPlayer() {
-        renderer.setProjectionMatrix(cam.combined);
-        Player player = world.getPlayer();
-        renderer.begin(ShapeRenderer.ShapeType.Line);
-
-        Rectangle rect = player.getBounds();
-        float x1 = player.getPosition().x + rect.x;
-        float y1 = player.getPosition().y + rect.y;
-        renderer.setColor(1, 0, 0, 1);
-        renderer.rect(x1, y1, rect.width, rect.height);
-        renderer.end();
+        spriteBatch.draw(textureRegions.get("player"),
+            world.getPlayer().getPosition().x * ppuX, world.getPlayer().getPosition().y * ppuY,
+            Player.SIZE * ppuX, Player.SIZE * ppuY);
     }
 }

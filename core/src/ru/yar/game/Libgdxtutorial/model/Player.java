@@ -12,6 +12,9 @@ public class Player {
     public enum State {
         NONE, WALKING, DEAD
     }
+    public enum Direction {
+        LEFT, RIGHT, UP, DOWN, NONE
+    }
 
     // Скорость движения
     public static final float SPEED = 2f;
@@ -27,6 +30,8 @@ public class Player {
     Rectangle bounds = new Rectangle();
     // Текущее состояние
     State state = State.NONE;
+
+    boolean facingLeft = true;
 
     public Player(Vector2 position) {
         this.position = position;

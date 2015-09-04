@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class Brick {
     // Размер объекта
-    static  final float SIZE = 0.8f;
+    public static  final float SIZE = 1f;
     // Кординаты
     Vector2 position = new Vector2();
     Rectangle bounds = new Rectangle();
