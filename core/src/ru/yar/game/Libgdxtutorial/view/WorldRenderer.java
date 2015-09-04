@@ -18,7 +18,7 @@ import ru.yar.game.Libgdxtutorial.model.World;
  * Created by bird on 04.09.2015.
  *
  */
-public class worldRenderer {
+public class WorldRenderer {
     public static float CAMERA_WIDTH = 8f;
     public static float CAMERA_HEIGHT = 5f;
 
@@ -51,7 +51,7 @@ public class worldRenderer {
         this.cam.update();
     }
 
-    public worldRenderer(World world) {
+    public WorldRenderer(World world) {
         spriteBatch = new SpriteBatch();
         this.world = world;
         this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);

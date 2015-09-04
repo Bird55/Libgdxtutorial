@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import ru.yar.game.Libgdxtutorial.controller.WorldController;
 import ru.yar.game.Libgdxtutorial.model.Player;
 import ru.yar.game.Libgdxtutorial.model.World;
-import ru.yar.game.Libgdxtutorial.view.worldRenderer;
+import ru.yar.game.Libgdxtutorial.view.WorldRenderer;
 
 /**
  * Created by bird on 04.09.2015.
@@ -17,7 +17,7 @@ import ru.yar.game.Libgdxtutorial.view.worldRenderer;
  */
 public class GameScreen implements Screen, InputProcessor {
     private World world;
-    private worldRenderer renderer;
+    private WorldRenderer renderer;
     private WorldController controller;
 
     private int width, height;
@@ -25,7 +25,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void show() {
         world = new World();
-        renderer = new worldRenderer(world);
+        renderer = new WorldRenderer(world);
         controller = new WorldController(world);
         Gdx.input.setInputProcessor(this);
     }
